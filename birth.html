@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy Birthday Baby</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    
+    <style>
+        :root {
+            --primary: #ff758c;
+            --secondary: #ff7eb3;
+            --dark: #2d3436;
+            --soft-pink: #fff5f7;
+            --timeline-line: #ffccd5;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background: var(--soft-pink); color: var(--dark); overflow-x: hidden; width: 100%; }
+
+        /* --- 1. PIN Lock (Mobile Friendly) --- */
+        #lock-screen {
+            position: fixed; inset: 0; background: linear-gradient(135deg, var(--primary), var(--secondary));
+            z-index: 1000; display: flex; justify-content: center; align-items: center; transition: 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .lock-box { background: white; padding: 30px; border-radius: 25px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); width: 85%; }
+        .lock-box h2 { font-family: 'Dancing Script'; margin-bottom: 15px; font-size: 2.2rem; color: var(--primary); }
+        input { padding: 15px; border: 2px solid #eee; border-radius: 12px; width: 100%; max-width: 150px; text-align: center; font-size: 1.2rem; outline: none; appearance: none; }
+
+        /* --- 2. Sections --- */
+        section { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px 20px; text-align: center; width: 100%; }
+        .hero h1 { font-family: 'Dancing Script'; font-size: 3rem; color: var(--primary); margin-bottom: 15px; line-height: 1.2; }
+        
+        /* --- 3. Mobile Journey Timeline --- */
+        .timeline { position: relative; width: 100%; max-width: 500px; margin-top: 30px; }
+        .timeline::after { content: ''; position: absolute; width: 3px; background: var(--timeline-line); top: 0; bottom: 0; left: 20px; border-radius: 10px; }
+        
+        .timeline-item { position: relative; margin-bottom: 60px; padding-left: 50px; text-align: left; width: 100%; }
+        .timeline-item::after { content: '❤'; position: absolute; left: 10px; top: 0; width: 24px; height: 24px; background: white; border: 3px solid var(--primary); border-radius: 50%; z-index: 1; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 10px; }
+        
+        .timeline-content { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .timeline-content h3 { font-family: 'Dancing Script'; color: var(--primary); font-size: 1.8rem; margin-bottom: 8px; }
+        .timeline-photo { width: 100%; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 5px solid white; transform: rotate(-2deg); margin-top: 10px; }
+        .timeline-photo img { width: 100%; height: auto; max-height: 300px; object-fit: cover; display: block; }
+
+        /* --- 4. Interactive Cards --- */
+        .card-grid { display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; max-width: 300px; margin-top: 30px; }
+        .card { height: 160px; perspective: 1000px; cursor: pointer; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; }
+        .card.is-flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; border-radius: 20px; }
+        .card-front { background: white; color: var(--primary); font-size: 2rem; border: 2px dashed var(--secondary); }
+        .card-back { background: var(--primary); color: white; transform: rotateY(180deg); font-size: 0.95rem; }
+
+        /* --- 5. Enhanced Date Jar --- */
+        .jar-container { background: white; padding: 40px 20px; border-radius: 35px; box-shadow: 0 15px 30px rgba(0,0,0,0.05); width: 100%; max-width: 350px; }
+        .jar-icon { font-size: 7rem; cursor: pointer; transition: 0.3s; display: inline-block; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1)); }
+        .jar-icon:active { transform: scale(0.9) rotate(-10deg); }
+        #date-result { margin-top: 25px; font-family: 'Dancing Script'; font-size: 1.8rem; color: var(--primary); min-height: 60px; transition: 0.5s; }
+
+        /* --- UI Elements --- */
+        .countdown { display: flex; gap: 8px; margin: 25px 0; flex-wrap: wrap; justify-content: center; }
+        .time-box { background: white; padding: 12px; border-radius: 12px; min-width: 70px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .time-box span { display: block; font-size: 1.5rem; font-weight: 600; color: var(--primary); }
+        .btn { background: var(--primary); color: white; padding: 16px 40px; border-radius: 50px; font-weight: 600; border: none; font-size: 1.1rem; box-shadow: 0 10px 20px rgba(255,117,140,0.3); }
+        .gift-box { font-size: 7rem; animation: wobble 2s infinite; }
+        @keyframes wobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+        .hidden-msg { display: none; opacity: 0; transition: 1s; width: 100%; background: white; padding: 30px; border-radius: 25px; border: 2px solid var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div id="lock-screen">
+        <div class="lock-box">
+            <h2>Unlock My Heart</h2>
+            <p style="margin-bottom: 20px; color: #666; font-size: 0.9rem;">Enter the year we first met to unlock your birthday surprise.</p>
+            <input type="tel" id="pin" placeholder="YYYY" maxlength="4">
+            <br><br>
+            <button class="btn" onclick="checkPin()">Unlock ❤️</button>
+        </div>
+    </div>
+
+    <section class="hero">
+        <h1 id="headline">The Best Day of the Year!</h1>
+        <div class="countdown" id="timer">
+            <div class="time-box"><span id="days">00</span>Days</div>
+            <div class="time-box"><span id="hours">00</span>Hrs</div>
+            <div class="time-box"><span id="mins">00</span>Min</div>
+            <div class="time-box"><span id="secs">00</span>Sec</div>
+        </div>
+        <p style="letter-spacing: 2px; font-size: 0.75rem; color: var(--primary);">SCROLL TO EXPLORE ↓</p>
+    </section>
+
+    <section style="background: white; min-height: auto; padding: 80px 25px;">
+        <h2 style="font-family: 'Dancing Script'; font-size: 2.8rem; color: var(--primary); margin-bottom: 20px;">To My Dearest Gayatri</h2>
+        <div style="line-height: 1.8; font-size: 1.05rem; color: #555; text-align: center;">
+            <p>Today isn't just a normal day; it's the day the world became a lot brighter. I wanted to create something as unique and beautiful as you are. Thank you for being my partner, my best friend, and my favorite person.</p>
+            <p>May your year be filled with as much joy as you bring into my life.</p>
+        </div>
+    </section>
+
+    <section style="background: #fffafa;">
+        <h2 style="font-family: 'Dancing Script'; font-size: 2.8rem; color: var(--primary); margin-bottom: 40px;">Our Journey</h2>
+        <div class="timeline">
+            <div class="timeline-item reveal">
+                <div class="timeline-content">
+                    <h3>Our First Selfie Together at School</h3>
+                    <p>That time my heart was beating so fast, I thought it would burst out of my chest.</p>
+                </div>
+                <div class="timeline-photo">
+                    <img src="pictures/first.jpg" alt="School Selfie">
+                </div>
+            </div>
+            <div class="timeline-item reveal">
+                <div class="timeline-content">
+                    <h3>Our First Movie Together</h3>
+                    <p>I still remember how happy I was, and how beautiful you looked. It was a magical moment for me.</p>
+                </div>
+                <div class="timeline-photo" style="transform: rotate(2deg);">
+                    <img src="pictures/second.jpg" alt="Movie Date">
+                </div>
+            </div>
+            <div class="timeline-item reveal">
+                <div class="timeline-content">
+                    <h3>Endless talk with coffee</h3>
+                    <p>Each talk, every laugh, and even the bike ride. I'm grateful for it all.</p>
+                </div>
+                <div class="timeline-photo" style="transform: rotate(-1deg);">
+                    <img src="pictures/third.jpg" alt="Restaurant Date">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2 style="font-family: 'Dancing Script'; font-size: 2.5rem; margin-bottom: 30px; color: var(--primary);">Reasons I Love You</h2>
+        <p style="margin-bottom: 40px; color: #888;">(Click to flip the cards)</p>
+        <div class="card-grid">
+            <div class="card" onclick="this.classList.toggle('is-flipped')">
+                <div class="card-inner"><div class="card-front">✨</div><div class="card-back">The way your eyes sparkle when you're talking about something you love.</div></div>
+            </div>
+            <div class="card" onclick="this.classList.toggle('is-flipped')">
+                <div class="card-inner"><div class="card-front">🧸</div><div class="card-back">How you always know exactly how to make me feel better after a long day.</div></div>
+            </div>
+            <div class="card" onclick="this.classList.toggle('is-flipped')">
+                <div class="card-inner"><div class="card-front">🍕</div><div class="card-back">Our late-night talks that make me realize how lucky I am to have you.</div></div>
+            </div>
+            <div class="card" onclick="this.classList.toggle('is-flipped')">
+                <div class="card-inner"><div class="card-front">🌈</div><div class="card-back">Your endless kindness and the way you care me and never judge me.</div></div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background: #ffeef2;">
+        <div class="jar-container">
+            <h2 style="font-family: 'Dancing Script'; font-size: 2.2rem; margin-bottom: 10px;">The Date Jar</h2>
+            <p style="font-size: 0.85rem; color: #888; margin-bottom: 20px;">Tap the jar to choose our next date!</p>
+            <div class="jar-icon" onclick="getNewDate()">🍯</div>
+            <div id="date-result">Tap me!</div>
+        </div>
+    </section>
+
+    <section>
+        <h2 style="font-family: 'Dancing Script'; font-size: 2.8rem; margin-bottom: 30px;">A Special Gift</h2>
+        <div class="gift-box" id="gift" onclick="openGift()">🎁</div>
+        <div class="hidden-msg" id="final-msg">
+            <h2 style="font-family: 'Dancing Script'; color: var(--primary); font-size: 2.2rem;">Happy Birthday, Gayatri!</h2>
+            <p style="margin-top: 20px; line-height: 1.6; font-size: 1rem;">I love you more than all the code in the world. I can't wait to celebrate many more with you! I hope this year brings you as much happiness as you've brought into my life since 2021. I love you more than words can ever say.</p>
+            <p style="margin-top: 25px; font-weight: 600; color: var(--primary);">Your Chandan...</p>
+        </div>
+    </section>
+
+    <script>
+        // 1. PIN CHECK
+        function checkPin() {
+            if(document.getElementById('pin').value === "2021") { 
+                document.getElementById('lock-screen').style.opacity = "0";
+                setTimeout(() => { document.getElementById('lock-screen').style.display = "none"; celebrate(); }, 1000);
+            } else { alert("Try again, love! (Hint: The year we met)"); }
+        }
+
+        // 2. COUNTDOWN (CHANGE BIRTHDAY DATE HERE)
+        const bday = new Date("February 22, 2026 00:00:00").getTime();
+        setInterval(() => {
+            const now = new Date().getTime();
+            const d = bday - now;
+            if (d > 0) {
+                document.getElementById('days').innerText = Math.floor(d / 86400000);
+                document.getElementById('hours').innerText = Math.floor((d % 86400000) / 3600000);
+                document.getElementById('mins').innerText = Math.floor((d % 3600000) / 60000);
+                document.getElementById('secs').innerText = Math.floor((d % 60000) / 1000);
+            } else { document.getElementById('headline').innerText = "Happy Birthday Gayatri! 🎉"; }
+        }, 1000);
+
+        // 3. DATE JAR
+        const dates = ["A trip to Maa Balakumari Temple", "A Surprise Restaurant Date", "Cozy Movie Marathon", "A Long Night Drive", "A Day at the Beach", "Cooking Maggie Together"];
+        function getNewDate() {
+            const res = document.getElementById('date-result');
+            res.style.opacity = 0;
+            setTimeout(() => {
+                res.innerText = "✨ " + dates[Math.floor(Math.random() * dates.length)];
+                res.style.opacity = 1;
+            }, 300);
+        }
+
+        // 4. GIFT UNWRAP
+        function openGift() {
+            document.getElementById('gift').style.display = 'none';
+            const msg = document.getElementById('final-msg');
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.opacity = 1, 100);
+            celebrate();
+        }
+
+        function celebrate() {
+            confetti({ particleCount: 150, spread: 60, origin: { y: 0.7 }, colors: ['#ff758c', '#ffffff'] });
+        }
+
+        // 5. MOBILE REVEAL
+        ScrollReveal().reveal('.reveal', { delay: 200, distance: '30px', origin: 'bottom', interval: 150 });
+    </script>
+</body>
+</html>
